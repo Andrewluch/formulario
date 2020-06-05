@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recetas adaptadas</title>
+    <link rel="stylesheet" href="index.css">
+
+</head>
+
+<body>
+
+
+
+
+    <header class="cabecera">
+
+        <img src=logo.jpg width="150" height="150" />
+
+
+        <ul>
+            <li><a href="index.html">INICIO</a></li>
+            <li><a href="sobreNosotros.html">SOBRE NOSOTROS</a></li>
+            <li><a href="menuDiario.html">MI MENÚ DIARIO </a></li>
+        </ul>
+
+    </header>
+
+    <hr style=color:black>
+    </hr>
+
+    <h1 class="primerParrafo"> ¡Bienvenido a B POSITIVE! </h1>
+
+    <body>
+        <div class="parrafos">
+            <p>Con nuestra calculadora de calorías no solo obtienes una tabla estándar de calorías, sino un cálculo
+                exacto de las calorías de los productos que consumes. El programa hace que documentar y calcular las
+                calorías que consumes sea muy sencillo.
+            </p>
+            <p> ¡Esta calculadora de calorías no solo es práctica, sino también muy fácil de usar! Nuestro programa te
+                recordará tus comidas favoritas, te permitirá crear comidas nuevas y llevará un cálculo de los deportes
+                y actividades que añadas a tu diario. Además de todo esto, te mostrará la información en distintos
+                gráficos, haciendo que puedas comprender y evaluar tu progreso diario de la forma más sencilla.</p>
+
+            <h4>Introduce algunos de tus datos personales para poder calcular tu kcal diarias adaptadas a ti</h4>
+        </div>
+
+
+        <div id="caja_datos_personales">
+
+
+
+
+            <div>
+                <p class="sexo">Sexo:</p>
+                <select id="sexo">
+                    <option value="h"> Hombre</option>
+                    <option value="m"> Mujer</option>
+                </select>
+            </div>
+            <div>
+                <label>Altura (cm)</label><input type="number" min="1" max="300" id="altura">
+            </div>
+
+            <div>
+                <label>Edad</label><input type="number" min="1" max="120" id="edad">
+            </div>
+
+            <div>
+                <label>Peso (kg)</label><input type="number" min="1" max="300" step="0.01" id="peso">
+            </div>
+
+            <div id="resultado"></div>
+
+            <div>
+                <input type="submit" value="Calcular" onclick="calcular()">
+            </div>
+
+
+        </div>
+
+        <div class="introduceIngrediente" <label for="ingr">Para poder ajustar las kcal diarias con diferentes platos al
+            día, introduce tu ingrediente favorito, ¡y te saldrán múltiples recetas riquísimas! </label>
+        </div>
+        <div class="cajita">
+            <input type="text" id="ingr" placeholder="Introduce aquí tu ingrediente" />
+            <button onclick="mostrarReceta()"> Mostrar la receta </button>
+        </div>
+
+        <!--Utilizaremos el div con id"resultados" para rellenar aqui el resultado-->
+        <div id="resultados"></div>
+
+
+        <script>
+
+            let comida = JSON.parse(localStorage.getItem('comida'));
+
+            if (comida === null) {
+                comida = [];
+            }
+
+            // Vamos a crear una caja donde el usuario tenga que introducir un ingrediente que quiera que aparezca 
+
+
+            function mostrarReceta() {
+                let ingrediente = document.getElementById('ingr').value;
+
+                fetch('https://api.edamam.com/search?app_id=91d78d5e&app_key=2425356d87b8c21f35eccea4367bf19e&q=' + ingrediente)
+                    .then(function obtenerRespuesta(respuesta) {
+                        return respuesta.json();
+                    })
+                    .then(function obtenerDatos(datos) {
+                        let calories;
+                        let fat;
+                        let procnt;
+                        let chocdf;
+
+                        for (i = 0; i < datos.hits.length; i++) {
+                            console.log(datos.hits[i].recipe.label)
+
+                            calories = datos.hits[i].recipe.
+                                calories / 9;
+                            console.log(calories);
+                            fat = datos.hits[i].recipe.totalDaily.FAT.quantity / 9;
+
+                            chocdf = datos.hits[i].recipe.totalDaily.CHOCDF.quantity / 9;
+
+                            procnt = datos.hits[i].recipe.totalDaily.PROCNT.quantity / 9;
+
+
+                            document.getElementById('resultados').innerHTML += `<div id="formatoDatos">
+    
+                            
+                            <div class="bloque"> <a href= '${datos.hits[i].recipe.url}'><img  src = '${datos.hits[i].recipe.image}' /> </a> <div <i>Pincha en la imagen para ver la receta</i></div> <h2>${datos.hits[i].recipe.label}</h2> 
+                            <div class="datosMacros">
+                                <p> ${calories.toFixed(2)}  kcal  </p>   <p>  ${fat.toFixed(2)}   % de grasas  </p>   <p>  ${chocdf.toFixed(2)}  % de carbohidratos </p>   <p>  ${procnt.toFixed(2)}  % de proteinas  </p>
+                                </div>
+                              <div class="botones">
+                                <button onclick="añadirReceta('${datos.hits[i].recipe.label}', '${calories.toFixed(2)}')">Añadir la receta a mi menú diario</button>
+                             <button onclick="quitarReceta()">Quitar la receta de mi menú diario</button>
+                            </div>
+                            </div>`
+
+
+
+                            console.log(datos);
+                        }
+
+                    })
+
+            }
+
+            // AÑADIR RECETAS
+
+            let receta = 0;
+
+            function añadirReceta(titulo, calorias) {
+                receta += 1;
+                document.getElementById('formatoDatos').innerHTML = `<p>Nueva receta: ${receta}</p>`;
+                let encontrado = false
+
+                for (let i = 0; i < comida; i++) {
+                    if (titulo === recetaSeleccionada.nombre) {
+                        encontrado = true
+                    }
+                }
+                if (encontrado === false) {
+                    let recetaSeleccionada = {
+                        nombre: titulo,
+                        caloriasTotales: calorias
+                    }
+
+                    comida.push(recetaSeleccionada);
+                    localStorage.setItem('comida', JSON.stringify(comida));
+                }
+            }
+
+
+
+
+            //if (nombre === nombre) {
+            //   for (let=i;i<receta;i++)
+            // }
+
+            //for (let i=0; i<receta;i++) {
+            //   document.getElementById('cestaReceta').innerHTML += formatoDatos;
+            //}
+
+
+            function quitarReceta() {
+                if (receta > 0) {
+                    receta -= 1;
+                    document.getElementById('formatoDatos').
+                        innerHTML = `<p>Nueva receta: ${receta}</p>`;
+                }
+                for (let i = 0; i < receta; i = i - 1) {
+                    document.getElementById('cestaReceta').innerHTML = formatoDatos;
+                }
+            }
+
+
+            function calcular() {
+
+
+                // FORMULARIO obtenemos los valores del formulario
+
+                let altura = document.getElementById('altura').value;
+
+                let edad = document.getElementById("edad").value;
+
+                let sexo = document.getElementById("sexo").value;
+
+                let peso = document.getElementById("peso").value;
+
+
+
+                let resultado = document.getElementById("resultado");
+
+                if (parseInt(altura) > 0 && parseInt(edad) > 0 && sexo && parseInt(peso) > 0) {
+
+                    // buscamos kcal idoneas para cada sexo
+
+                    let kcal_mujer = (10 * peso) + (6.25 * altura) - (5 * edad) - 161;
+                    let kcal_hombre = (10 * peso) + (6.25 * altura) - (5 * edad) + 5;
+
+
+                    if (sexo == "m") {
+
+                        kcal_mujer = kcal_mujer + 0;
+
+                    }
+
+                    resultado.classList.add("cajita_resultado");
+
+                    // mostramos el resultado en relación a nuestro peso
+
+                    let respuesta = "";
+
+
+                    if (sexo == "m") {
+
+                        respuesta = "   La ingesta de kcal diarias que debes hacer es de " + kcal_mujer;
+
+                    } else if (sexo == "h") {
+                        respuesta = "   La ingesta de kcal diarias que debes hacer es de " + kcal_hombre;
+                    }
+
+                    resultado.innerHTML = respuesta
+
+
+                }
+            }
+
+
+        </script>
+
+    </body>
+    <footer>
+        <div class="pie">
+            < </div>
+    </footer>
+
+</html>
